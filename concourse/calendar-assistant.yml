@@ -28,10 +28,10 @@ resources:
         - concourse/**
         - doc/**
 
-  - name: calendar-assistant-pr
+  - name: calendar-assistant-pr2
     type: pull-request
     check_every: 15m
-    # webhook: https://ci.nokogiri.org/api/v1/teams/flavorjones/pipelines/calendar-assistant/resources/calendar-assistant-pr/check/webhook?webhook_token=WEBHOOK_TOKEN
+    # webhook: https://ci.nokogiri.org/api/v1/teams/flavorjones/pipelines/calendar-assistant/resources/calendar-assistant-pr2/check/webhook?webhook_token=WEBHOOK_TOKEN
     # configured at https://github.com/flavorjones/calendar-assistant/settings/hooks
     webhook_token: ((calendar-assistant-pr-webhook-token))
     source:
@@ -68,7 +68,7 @@ anchors:
     put: slack-notification
     params:
       silent: true
-      text_file: calendar-assistant-pr/.git/id
+      text_file: calendar-assistant-pr2/.git/id
       text: |
         :concourse-failed: (PR $TEXT_FILE_CONTENT) $ATC_EXTERNAL_URL/builds/$BUILD_ID :nobueno:
         https://github.com/flavorjones/calendar-assistant/pull/$TEXT_FILE_CONTENT
@@ -76,7 +76,7 @@ anchors:
     put: slack-notification
     params:
       silent: true
-      text_file: calendar-assistant-pr/.git/id
+      text_file: calendar-assistant-pr2/.git/id
       text: |
         :concourse-succeeded: (PR $TEXT_FILE_CONTENT) $ATC_EXTERNAL_URL/builds/$BUILD_ID :success:
         https://github.com/flavorjones/calendar-assistant/pull/$TEXT_FILE_CONTENT
@@ -110,11 +110,11 @@ jobs:
     public: true
     plan:
       - get: ci
-      - get: calendar-assistant-pr
+      - get: calendar-assistant-pr2
         trigger: true
         version: every
-      - put: calendar-assistant-pr
-        params: {path: calendar-assistant-pr, status: PENDING}
+      - put: calendar-assistant-pr2
+        params: {path: calendar-assistant-pr2, status: PENDING}
       - task: rake-spec
         config:
           platform: linux
@@ -123,7 +123,7 @@ jobs:
             source: {repository: "flavorjones/calendar-assistant-test"}
           inputs:
             - name: ci
-            - name: calendar-assistant-pr
+            - name: calendar-assistant-pr2
               path: calendar-assistant
           params:
             CC_TEST_REPORTER_ID: {{code_climate_reporter_id}}
@@ -132,10 +132,10 @@ jobs:
         on_failure:
           aggregate:
             - *notify_pr_failure_to_slack
-            - put: calendar-assistant-pr
-              params: {path: calendar-assistant-pr, status: FAILURE}
+            - put: calendar-assistant-pr2
+              params: {path: calendar-assistant-pr2, status: FAILURE}
         on_success:
           aggregate:
             - *notify_pr_success_to_slack
-            - put: calendar-assistant-pr
-              params: {path: calendar-assistant-pr, status: SUCCESS}
+            - put: calendar-assistant-pr2
+              params: {path: calendar-assistant-pr2, status: SUCCESS}
